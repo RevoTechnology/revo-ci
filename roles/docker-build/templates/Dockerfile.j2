@@ -1,0 +1,55 @@
+FROM java:8-jdk
+
+RUN apt-get update
+RUN apt-get install -y git wget curl
+
+ENV TEAMCITY_VERSION 9.0.4
+ENV TEAMCITY_AGENT_HOME /opt/lib/teamcity-agent
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN mkdir -p /etc/teamcity-agent
+
+COPY conf/* /etc/teamcity-agent/
+
+RUN apt-get install -y unzip
+
+RUN mkdir -p /opt/lib && \
+    wget -nv http://{{internal_host}}:8111/update/buildAgent.zip -O /tmp/buildAgent.zip && \
+    unzip -qq /tmp/buildAgent.zip -d $TEAMCITY_AGENT_HOME && \
+    chmod +x $TEAMCITY_AGENT_HOME/bin/*.sh && \
+    rm -f $TEAMCITY_AGENT_HOME/conf/buildAgent.properties && \
+    ln -s /etc/teamcity-agent/buildAgent.properties $TEAMCITY_AGENT_HOME/conf/buildAgent.properties && \
+    rm -fR /tmp/*
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x /opt/lib/teamcity-agent/bin/agent.sh
+
+# install RVM, Ruby, and Bundler
+RUN apt-get install -y build-essential
+RUN apt-get install -y openssl libreadline6 libreadline6-dev curl zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion pkg-config
+RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+RUN \curl -sSL https://get.rvm.io | bash -s stable
+RUN /bin/bash -l -c "rvm requirements"
+RUN /bin/bash -l -c "rvm install 2.1.5"
+RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
+
+# install app dependecies
+RUN apt-get install -qqy redis-server rabbitmq-server
+
+RUN apt-get install -qqy mysql-server libmysqld-dev
+
+# ssh  keys
+RUN mkdir /root/.ssh/
+ADD id_rsa /root/.ssh/id_rsa
+ADD id_rsa.pub /root/.ssh/id_rsa.pub
+RUN chmod 600 /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/id_rsa.pub
+RUN touch /root/.ssh/known_hosts
+RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
+
+VOLUME [ "/etc/teamcity-agent" ]
+
+WORKDIR $TEAMCITY_AGENT_HOME
+
+ENTRYPOINT ["/docker-entrypoint.sh"]

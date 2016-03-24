@@ -1,0 +1,4 @@
+---
+  - name: Install Docker
+    apt: pkg=docker-engine update_cache=yes
+    sudo: true

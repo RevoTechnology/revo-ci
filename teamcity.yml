@@ -1,0 +1,18 @@
+---
+- hosts: ci
+  vars:
+    - user: "deployer"
+    - internal_host: "10.1.2.91"
+    - teamcity:
+        version: "9.1.6"
+        runners:
+          - {name: 'tc_agent_1', port: '9090'}
+          - {name: 'tc_agent_2', port: '9091'}
+          - {name: 'tc_agent_3', port: '9092'}
+  roles:
+    - requirements
+    - teamcity-server
+    - nginx-configure
+    - docker-install
+    - docker-build
+    - agents-configure

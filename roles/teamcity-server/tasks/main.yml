@@ -1,0 +1,19 @@
+- name: Download Team City
+  get_url: url={{ teamcity_download_url }} dest={{ teamcity_download_path }}
+
+- name: Unpack team city archive
+  command: "tar -xvzf {{ teamcity_download_path }} --directory {{ teamcity_installation_directory }} creates={{ teamcity_installation_path }}"
+
+- name: Add teamcity service to init.d
+  template: src=teamcity_service_script.sh.j2 dest=/etc/init.d/teamcity mode=755
+  sudo: true
+
+- name: Enable teamcity service
+  service: name=teamcity enabled=yes
+  sudo: true
+
+- name: Start teamcity
+  service: name=teamcity state=started
+
+- name: Stop teamcity
+  service: name=teamcity state=stopped

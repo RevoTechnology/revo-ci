@@ -1,0 +1,14 @@
+- name: Copy tc agent service conf
+  action: template src=tc-agent-service.conf.j2 dest="/etc/init/{{item.name}}.conf"
+  with_items: "{{teamcity.runners}}"
+  sudo: true
+
+- name: Enable tc agent service
+  service: name={{item.name}} enabled=yes
+  with_items: "{{teamcity.runners}}"
+  sudo: true
+
+- name: Start tc agent service
+  service: name={{item.name}} state=restarted
+  with_items: "{{teamcity.runners}}"
+  sudo: true

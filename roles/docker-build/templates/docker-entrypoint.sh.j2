@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ ! -z "$AGENT_NAME" ]; then
+    sed -i -- "s/<docker_agent_name>/$AGENT_NAME/g" /etc/teamcity-agent/buildAgent.properties
+fi
+
+if [ ! -z "$AGENT_PORT" ]; then
+    sed -i -- "s/<docker_agent_port>/$AGENT_PORT/" /etc/teamcity-agent/buildAgent.properties
+fi
+
+/bin/bash $TEAMCITY_AGENT_HOME/bin/agent.sh run

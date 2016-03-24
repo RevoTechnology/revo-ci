@@ -1,0 +1,42 @@
+---
+- name: Add Docker repository key
+  apt_key: keyserver=https://apt.dockerproject.org/gpg id=2C52609D
+  register: add_repository_key
+  ignore_errors: true
+
+- name: Alternative | Add Docker repository key
+  shell: "curl -sSL https://apt.dockerproject.org/gpg | sudo apt-key add -"
+  when: add_repository_key|failed
+
+- name: Update apt
+  apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-{{ ansible_distribution_release }} main' state=present
+  sudo: true
+
+- name: update
+  action: apt update_cache=yes
+  sudo: true
+
+- name: install dependecies
+  action: apt pkg={{item}} state=installed
+  sudo: true
+  with_items:
+    - nginx
+    - curl
+    - git
+    - openjdk-7-jre
+    - apt-transport-https
+    - ca-certificates
+    - python-dev
+    - python-setuptools
+    - upstart
+
+- name: Install pip
+  easy_install: name=pip state=latest
+  sudo: true
+
+- name: Install docker-py
+  pip: name=docker-py state=present version=1.1.0
+  sudo: true
+
+- name: Generate SSH key
+  user: name={{user}} generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file=.ssh/id_rsa

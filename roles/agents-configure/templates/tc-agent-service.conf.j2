@@ -1,0 +1,14 @@
+description "tc agent"
+author "me"
+start on filesystem and started docker
+stop on runlevel [!2345]
+respawn
+script
+    /usr/bin/docker rm {{item.name}} | true
+    /usr/bin/docker run -P --name {{item.name}} -e AGENT_NAME={{item.name}} -e AGENT_PORT={{item.port}} --expose {{item.port}} tc/agent
+end script
+
+pre-stop script
+        /usr/bin/docker stop {{item.name}}
+        /usr/bin/docker rm {{item.name}}
+end script

@@ -1,0 +1,36 @@
+- name: Create docker image directory
+  file: path={{teamcity_user_home}}/client_docker_image state=directory
+
+- name: Create docker image conf directory
+  file: path={{teamcity_user_home}}/client_docker_image/conf state=directory
+
+- name: Copy Dockerfile
+  action: template src={{item.src}} dest="{{teamcity_user_home}}/client_docker_image/{{item.dest}}"
+  with_items:
+    - { src: 'Dockerfile.j2',                 dest: 'Dockerfile' }
+    - { src: 'docker-entrypoint.sh.j2',       dest: 'docker-entrypoint.sh' }
+    - { src: 'conf/buildAgent.properties.j2', dest: 'conf/buildAgent.properties' }
+  register: docker_configuration_files
+
+- name: Copy SSH keys
+  command: cp {{teamcity_user_home}}/.ssh/{{item}} {{teamcity_user_home}}/client_docker_image/{{item}}
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+
+- name: Build agent docker image
+  docker_image: path="{{teamcity_user_home}}/client_docker_image/" name="tc/agent" state=present
+  sudo: true
+
+- name: Rebuild agent docker image
+  docker_image: path="{{teamcity_user_home}}/client_docker_image/" name="tc/agent" state=build
+  when: docker_configuration_files.changed
+  sudo: true
+
+- name: Create tc agent docker container
+  docker:
+    name: "{{item.name}}"
+    image: tc/agent
+    state: present
+  with_items: "{{teamcity.runners}}"
+  sudo: true
