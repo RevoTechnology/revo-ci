@@ -35,7 +35,7 @@
   sudo: true
 
 - name: Install docker-py
-  pip: name=docker-py state=present version=1.1.0
+  pip: name=docker-py state=present version=1.7.0
   sudo: true
 
 - name: Generate SSH key
