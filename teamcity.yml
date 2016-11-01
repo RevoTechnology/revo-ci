@@ -16,3 +16,4 @@
     - docker-install
     - docker-build
     - agents-configure
+    - mysql

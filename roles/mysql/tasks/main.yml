@@ -1,0 +1,21 @@
+- name: install mysql package
+  action: apt pkg={{item}} state=installed
+  sudo: true
+  with_items:
+    - mysql-server-5.5
+    - python-mysqldb
+
+- name: Start the MySQL service
+  sudo: yes
+  service:
+    name: mysql
+    state: started
+    enabled: true
+
+- name: Create Teamcity db
+  mysql_db: name=teamcity state=present
+  sudo: true
+
+- name: Create Teamcity db user
+  mysql_user: name=teamcity password=teamcity priv=*.*:ALL,GRANT state=present
+  sudo: true
