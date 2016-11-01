@@ -23,7 +23,7 @@
   sudo: true
 
 - name: Rebuild agent docker image
-  docker_image: path="{{teamcity_user_home}}/client_docker_image/" name="tc/agent" state=present force=true push=false
+  docker_image: path="{{teamcity_user_home}}/client_docker_image/" name="tc/agent" state=present force=true
   when: docker_configuration_files.changed
   sudo: true
 
