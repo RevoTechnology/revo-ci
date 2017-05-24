@@ -59,6 +59,16 @@ RUN chmod 600 /root/.ssh/id_rsa.pub
 RUN touch /root/.ssh/known_hosts
 RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
 
+#update rvm
+RUN /bin/bash -l -c "rvm get head"
+
+#install ruby 2.3.3
+RUN /bin/bash -l -c "rvm install 2.3.3"
+
+#install imagemagic
+RUN apt-get update
+RUN apt-get install -qqy imagemagick
+
 VOLUME [ "/etc/teamcity-agent" ]
 
 WORKDIR $TEAMCITY_AGENT_HOME
